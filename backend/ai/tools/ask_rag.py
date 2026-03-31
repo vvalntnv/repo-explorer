@@ -1,12 +1,15 @@
 import re
 
+from vectors.store import get_client
+from vectors import embedder
+
 from ._common import resolve_repo_path
 from .models import RagResult
 
 TOKEN_PATTERN = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]+")
 
 
-def ask_rag(
+async def ask_rag(
     question: str,
     root: str = ".",
     top_k: int = 10,
@@ -30,5 +33,18 @@ def ask_rag(
 
     if not base.exists() or not base.is_dir():
         raise FileNotFoundError(f"Directory not found: {root}")
+
+    db_client = await get_client()
+    collection = await db_client.get_collection(name="files")
+
+    question_embedding = embedder.embed_query(question)
+    matches = await collection.query(
+        query_embeddings=question_embedding,
+        include=["metadatas", "documents"],
+        n_results=20,
+    )
+
+    docs = matches["documents"]
+    metadatas = matches["metadatas"]
 
     raise NotImplementedError("This function is not yet implemented")

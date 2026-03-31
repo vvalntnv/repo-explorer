@@ -1,4 +1,8 @@
+from typing import cast
+
+import numpy as np
 from chromadb import AsyncHttpClient, AsyncClientAPI
+from chromadb.api.types import Embedding
 from vectors.models import ChunkEmbedding
 
 _client: AsyncClientAPI | None = None
@@ -20,21 +24,22 @@ async def write_embeddings(embeddings: list[ChunkEmbedding]) -> None:
         return
 
     collection = await client.get_or_create_collection(name="files")
-    vectors = []
+    ids: list[str] = []
+    vectors: list[Embedding] = []
+    documents: list[str] = []
     metadatas = []
-    documents = []
-    ids = []
 
-    for id, embedding in enumerate(embeddings):
-        vectors.append(embedding.embedding)
+    for chunk in embeddings:
+        ids.append(chunk.chunk_id)
+        vectors.append(cast(Embedding, np.asarray(chunk.embedding, dtype=np.float32)))
+        documents.append(chunk.content)
         metadatas.append(
             {
-                "file_path": embedding.file_path,
-                "chunk_id": embedding.chunk_id,
+                "chunk_id": chunk.chunk_id,
+                "file_path": chunk.file_path,
+                **chunk.metadata,
             }
         )
-        ids.append(str(id))
-        documents.append(embedding.content)
 
     await collection.add(
         ids=ids,
