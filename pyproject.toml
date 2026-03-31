@@ -1,0 +1,11 @@
+[project]
+name = "repo-explorer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.135.2",
+    "pydantic-ai>=0.0.30",
+    "textual>=8.2.1",
+]
