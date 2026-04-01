@@ -14,43 +14,46 @@ def embed_query(query: str) -> list[float]:
     return embed_chunk(query)
 
 
-async def embed_file(file: Path) -> list[float]:
+async def embed_file(file: Path) -> list[ChunkEmbedding]:
     lines = file.read_text(encoding="utf-8").splitlines()
     if not lines:
         return []
 
     chunk_embeddings: list[ChunkEmbedding] = []
-    first_embedding: list[float] = []
 
-    for chunk_index, chunk_start in enumerate(range(0, len(lines), CHUNK_SIZE)):
+    chunk_index = 0
+
+    start = 0
+    end = len(lines)
+    step = CHUNK_SIZE
+    for chunk_start in range(start, end, step):
         chunk_lines = lines[chunk_start : chunk_start + CHUNK_SIZE]
         chunk_content = "\n".join(chunk_lines).strip()
         if not chunk_content:
             continue
 
         embedded = embed_chunk(chunk_content)
-        if not first_embedding:
-            first_embedding = embedded
 
         chunk_embeddings.append(
             ChunkEmbedding(
                 chunk_id=f"{file}:{chunk_index}",
                 embedding=embedded,
                 file_path=str(file),
+                content=chunk_content,
                 metadata={
                     "chunk_index": chunk_index,
                     "start_line": chunk_start + 1,
                     "end_line": chunk_start + len(chunk_lines),
-                    "content": chunk_content,
                 },
             )
         )
+        chunk_index += 1
 
     if not chunk_embeddings:
         return []
 
     await store.write_embeddings(chunk_embeddings)
-    return first_embedding
+    return chunk_embeddings
 
 
 def embed_chunk(content: str) -> list[float]:
