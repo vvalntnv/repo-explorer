@@ -39,3 +39,7 @@ class DatabaseManager:
         async with self._async_session_factory() as session:
             async with session.begin():
                 yield session
+
+    async def dispose(self) -> None:
+        self._engine.dispose()
+        await self._async_engine.dispose()
