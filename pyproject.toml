@@ -13,3 +13,8 @@ dependencies = [
     "sqlalchemy>=2.0.48",
     "textual>=8.2.1",
 ]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.12.0",
+]

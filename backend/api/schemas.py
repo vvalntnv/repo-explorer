@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 class QuestionPayload(BaseModel):
     question: str = Field(..., min_length=1, description="The user's prompt")
+    path_to_repo: str = Field(description="The path of the repository on the machine")
     conversation_id: Optional[str] = Field(
         None, description="Optional identifier for threading follow-up questions"
     )
