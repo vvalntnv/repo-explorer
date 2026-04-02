@@ -1,11 +1,16 @@
+import os
 from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
+import torch
 
 from .models import ChunkEmbedding
 from . import store
 
 CHUNK_SIZE = 50
+MAX_CHUNK_CHARACTERS = 4_000
+DEFAULT_MAX_SEQ_LENGTH = 1_024
+DEFAULT_EMBEDDER_DEVICE = "cpu"
 
 _model: SentenceTransformer | None = None
 
@@ -14,8 +19,21 @@ def get_model():
     global _model
 
     if _model is None:
+        device = os.getenv("EMBEDDING_DEVICE", DEFAULT_EMBEDDER_DEVICE)
         _model = SentenceTransformer(
-            "perplexity-ai/pplx-embed-v1-0.6b", trust_remote_code=True
+            "perplexity-ai/pplx-embed-v1-0.6b",
+            trust_remote_code=True,
+            device=device,
+        )
+
+        max_seq_length = int(
+            os.getenv("EMBEDDING_MAX_SEQ_LENGTH", str(DEFAULT_MAX_SEQ_LENGTH))
+        )
+        _model.max_seq_length = max_seq_length
+
+        print(
+            "[embedder] loaded model on "
+            f"device={device} max_seq_length={_model.max_seq_length}"
         )
 
     return _model
@@ -43,7 +61,21 @@ async def embed_file(file: Path) -> list[ChunkEmbedding]:
         if not chunk_content:
             continue
 
-        embedded = embed_chunk(chunk_content)
+        if len(chunk_content) > MAX_CHUNK_CHARACTERS:
+            chunk_content = chunk_content[:MAX_CHUNK_CHARACTERS]
+
+        try:
+            embedded = embed_chunk(chunk_content)
+        except RuntimeError as exc:
+            if _is_out_of_memory_error(exc):
+                _clear_torch_caches()
+                print(
+                    f"[embed_file] skipping chunk due to OOM: "
+                    f"{file}:{chunk_index} ({exc})"
+                )
+                continue
+
+            raise
 
         chunk_embeddings.append(
             ChunkEmbedding(
@@ -70,10 +102,22 @@ async def embed_file(file: Path) -> list[ChunkEmbedding]:
 def embed_chunk(content: str) -> list[float]:
     model = get_model()
 
-    embedded = model.encode(content)
-    print(f"[embed_chunk] embedding type: {type(embedded)}")
+    embedded = model.encode(content, convert_to_numpy=True)
 
     if hasattr(embedded, "shape"):
         print(f"[embed_chunk] embedding shape: {embedded.shape}")
 
     return embedded.tolist()
+
+
+def _is_out_of_memory_error(exc: RuntimeError) -> bool:
+    lowered = str(exc).lower()
+    return "out of memory" in lowered or "mps backend out of memory" in lowered
+
+
+def _clear_torch_caches() -> None:
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()

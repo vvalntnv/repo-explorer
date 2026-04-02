@@ -3,12 +3,14 @@ from pathlib import Path
 
 from vectors import embedder
 
+MAX_FILE_SIZE_BYTES = 512_000
+
 
 class ExploreRepositoryService:
     def __init__(
         self,
         path: str,
-        simultanious_file_exploraton_batch_size: int = 100,
+        simultanious_file_exploraton_batch_size: int = 3,
     ) -> None:
         self.path = path
         self.simultanious_file_exploraton_batch_size = (
@@ -25,6 +27,8 @@ class ExploreRepositoryService:
         return files
 
     async def _explore_file_structure(self, files: list[Path]) -> None:
+        files = [file for file in files if self._is_embeddable_text_file(file)]
+
         total_batches = (len(files) // self.simultanious_file_exploraton_batch_size) + 1
 
         for batch_number in range(0, total_batches):
@@ -41,6 +45,28 @@ class ExploreRepositoryService:
 
             for task in tasks:
                 task.result()
+
+    def _is_embeddable_text_file(self, file_path: Path) -> bool:
+        if not file_path.exists() or not file_path.is_file():
+            return False
+
+        if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
+            return False
+
+        try:
+            sample = file_path.read_bytes()[:4096]
+        except OSError:
+            return False
+
+        if b"\x00" in sample:
+            return False
+
+        try:
+            sample.decode("utf-8")
+        except UnicodeDecodeError:
+            return False
+
+        return True
 
     async def _get_files(self, directory_path: Path) -> list[Path]:
         process = await asyncio.create_subprocess_exec(

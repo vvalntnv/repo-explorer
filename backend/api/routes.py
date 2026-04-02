@@ -7,6 +7,7 @@ from api.schemas import QuestionPayload
 
 from ai.agents import build_repo_prompt, repo_agent
 from ai.tools._common import use_repo_root
+from ai import tools
 from repositories.explore_repo_service import ExploreRepositoryService
 
 
@@ -22,11 +23,20 @@ async def question(
 
     with use_repo_root(question.path_to_repo):
         await ExploreRepositoryService(question.path_to_repo).explore()
+
+        rag_result = await tools.ask_rag(question.question)
+        breakpoint()
+
         prompt = build_repo_prompt(
             question=question.question,
-            context=f"Repository root: {question.path_to_repo}",
+            context=rag_result.answer,
         )
 
-        async with repo_agent.run_stream(prompt) as stream:
-            async for text in stream.stream_text():
-                yield text
+        try:
+            async with repo_agent.run_stream(prompt) as stream:
+                async for text in stream.stream_text():
+                    yield text
+        except Exception as exc:
+            yield (
+                f"The repository agent failed to produce a valid response. Error: {exc}"
+            )
