@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from ._common import REPO_ROOT, is_text_like, resolve_repo_path
+from ._common import get_active_repo_root, is_text_like, resolve_repo_path
 from .models import SearchMatch
 
 
@@ -18,6 +18,8 @@ def search_code(
         raise ValueError("query must not be empty")
     if max_results < 1:
         raise ValueError("max_results must be >= 1")
+
+    repo_root = get_active_repo_root()
 
     try:
         base = resolve_repo_path(path)
@@ -39,7 +41,7 @@ def search_code(
         if not file_path.is_file() or not is_text_like(file_path):
             continue
 
-        rel_parts = file_path.relative_to(REPO_ROOT).parts
+        rel_parts = file_path.relative_to(repo_root).parts
         if any(part.startswith(".") for part in rel_parts):
             continue
 
@@ -48,7 +50,7 @@ def search_code(
                 continue
             matches.append(
                 SearchMatch(
-                    file_path=str(file_path.relative_to(REPO_ROOT)),
+                    file_path=str(file_path.relative_to(repo_root)),
                     line_number=line_number,
                     line_text=line.rstrip(),
                 )

@@ -1,4 +1,4 @@
-from ._common import REPO_ROOT, resolve_repo_path
+from ._common import get_active_repo_root, resolve_repo_path
 
 
 def list_files(
@@ -11,6 +11,8 @@ def list_files(
     if max_results < 1:
         raise ValueError("max_results must be >= 1")
 
+    repo_root = get_active_repo_root()
+
     try:
         base = resolve_repo_path(path)
     except ValueError as exc:
@@ -20,7 +22,7 @@ def list_files(
         raise FileNotFoundError(f"Path not found: {path}")
 
     if base.is_file():
-        return [str(base.relative_to(REPO_ROOT))]
+        return [str(base.relative_to(repo_root))]
 
     if recursive:
         iterator = base.rglob("*")
@@ -32,11 +34,11 @@ def list_files(
         if not item.is_file():
             continue
 
-        rel_parts = item.relative_to(REPO_ROOT).parts
+        rel_parts = item.relative_to(repo_root).parts
         if not include_hidden and any(part.startswith(".") for part in rel_parts):
             continue
 
-        results.append(str(item.relative_to(REPO_ROOT)))
+        results.append(str(item.relative_to(repo_root)))
         if len(results) >= max_results:
             break
 

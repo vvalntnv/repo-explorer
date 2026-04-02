@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ._common import REPO_ROOT, resolve_repo_path
+from ._common import get_active_repo_root, resolve_repo_path
 
 
 def glob(
@@ -14,6 +14,8 @@ def glob(
     if max_results < 1:
         raise ValueError("max_results must be >= 1")
 
+    repo_root = get_active_repo_root()
+
     try:
         base = resolve_repo_path(root)
     except ValueError as exc:
@@ -26,7 +28,7 @@ def glob(
     for match in base.glob(pattern):
         if not match.is_file():
             continue
-        results.append(str(match.relative_to(REPO_ROOT)))
+        results.append(str(match.relative_to(repo_root)))
         if len(results) >= max_results:
             break
 

@@ -69,7 +69,7 @@ async def ask_rag(
         if len(seen_files) > max_files:
             break
 
-        candidates.append((doc, metadata))
+        candidates.append((doc, metadata))  # type: ignore
 
     if not candidates:
         return RagResult(
@@ -112,8 +112,8 @@ async def ask_rag(
         if file_path and file_path not in sources:
             sources.append(file_path)
 
-        start_line = int(metadata.get("start_line", 1))
-        end_line = int(metadata.get("end_line", start_line))
+        start_line = int(metadata.get("start_line", 1))  # type: ignore
+        end_line = int(metadata.get("end_line", start_line))  # type: ignore
         if end_line < start_line:
             end_line = start_line
 
