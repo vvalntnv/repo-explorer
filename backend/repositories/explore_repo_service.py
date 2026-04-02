@@ -39,8 +39,8 @@ class ExploreRepositoryService:
                     task = tg.create_task(embedder.embed_file(file))
                     tasks.append(task)
 
-                for task in tasks:
-                    task.result()
+            for task in tasks:
+                task.result()
 
     async def _get_files(self, directory_path: Path) -> list[Path]:
         process = await asyncio.create_subprocess_exec(
