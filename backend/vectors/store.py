@@ -1,8 +1,10 @@
 from typing import cast
 
 import numpy as np
-from chromadb import AsyncHttpClient, AsyncClientAPI
+from chromadb import AsyncHttpClient
+from chromadb.api import AsyncClientAPI
 from chromadb.api.types import Embedding
+
 from vectors.models import ChunkEmbedding
 
 _client: AsyncClientAPI | None = None
