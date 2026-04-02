@@ -7,7 +7,18 @@ from . import store
 
 CHUNK_SIZE = 50
 
-model = SentenceTransformer("perplexity-ai/pplx-embed-v1-0.6b", trust_remote_code=True)
+_model: SentenceTransformer | None = None
+
+
+def get_model():
+    global _model
+
+    if _model is None:
+        _model = SentenceTransformer(
+            "perplexity-ai/pplx-embed-v1-0.6b", trust_remote_code=True
+        )
+
+    return _model
 
 
 def embed_query(query: str) -> list[float]:
@@ -57,6 +68,8 @@ async def embed_file(file: Path) -> list[ChunkEmbedding]:
 
 
 def embed_chunk(content: str) -> list[float]:
+    model = get_model()
+
     embedded = model.encode(content)
     print(f"[embed_chunk] embedding type: {type(embedded)}")
 
