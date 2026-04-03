@@ -1,5 +1,9 @@
+from frontend.app import ChatApplication
+
+
 def main():
-    print("Hello from repo-explorer!")
+    app = ChatApplication()
+    app.run()
 
 
 if __name__ == "__main__":

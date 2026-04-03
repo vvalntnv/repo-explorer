@@ -1,0 +1,150 @@
+Screen {
+    background: #0a0f1f;
+    color: #eef2ff;
+}
+
+#app-shell {
+    width: 1fr;
+    height: 1fr;
+    align: center middle;
+}
+
+#panel {
+    width: 74;
+    padding: 1 2;
+    border: heavy #38bdf8;
+    background: #111a31;
+}
+
+#title {
+    content-align: center middle;
+    width: 100%;
+    color: #e0f2fe;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#subtitle {
+    content-align: center middle;
+    width: 100%;
+    color: #93c5fd;
+    margin-bottom: 1;
+}
+
+#repo-status {
+    width: 100%;
+    color: #bfdbfe;
+    text-style: bold;
+    margin-bottom: 1;
+}
+#input-row {
+    layout: horizontal;
+    width: 100%;
+}
+#mode-indicator {
+    width: 100%;
+    content-align: center middle;
+    margin-bottom: 1;
+    text-style: bold;
+}
+#mode-indicator.normal {
+    color: #fcd34d;
+}
+#mode-indicator.insert {
+    color: #34d399;
+}
+
+#mode-indicator.locked {
+    color: #fb7185;
+}
+
+#message-input {
+    width: 1fr;
+    margin-right: 1;
+    border: round #60a5fa;
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+#message-input:focus {
+    border: round #22d3ee;
+}
+
+#message-input:disabled {
+    border: round #334155;
+    background: #0b1222;
+    color: #64748b;
+}
+
+#send-btn {
+    width: 12;
+    min-width: 12;
+    background: #0ea5e9;
+    color: #082f49;
+    text-style: bold;
+}
+
+#send-btn:hover {
+    background: #38bdf8;
+}
+
+#send-btn:disabled {
+    background: #1e293b;
+    color: #475569;
+}
+
+#status {
+    margin-top: 1;
+    color: #67e8f9;
+    text-style: bold;
+    content-align: left middle;
+}
+
+RepoChooserScreen {
+    align: center middle;
+    background: #020617 65%;
+}
+
+#repo-modal-shell {
+    width: 92;
+    border: heavy #0284c7;
+    background: #0f172a;
+    padding: 1 2;
+}
+
+#repo-modal-title {
+    text-style: bold;
+    color: #bae6fd;
+    margin-bottom: 1;
+}
+
+#repo-modal-subtitle {
+    color: #93c5fd;
+    margin-bottom: 1;
+}
+
+#repo-modal-help {
+    color: #a5b4fc;
+    margin-bottom: 1;
+}
+
+#repo-tree {
+    height: 16;
+    border: round #334155;
+    margin-bottom: 1;
+}
+
+#repo-selected-path {
+    color: #7dd3fc;
+}
+
+#repo-warning {
+    color: #fda4af;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#repo-actions {
+    layout: horizontal;
+    width: 100%;
+}
